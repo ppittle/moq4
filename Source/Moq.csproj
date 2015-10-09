@@ -33,6 +33,8 @@
     <Optimize>false</Optimize>
     <DefineConstants>$(DefineConstants);TRACE;DEBUG;DESKTOP</DefineConstants>
     <MergeReferences>false</MergeReferences>
+    <DocumentationFile />
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

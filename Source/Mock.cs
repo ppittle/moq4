@@ -119,10 +119,50 @@ namespace Moq
 					types));
 			}
 
-			throw new ArgumentException(Resources.ObjectInstanceNotMock, "mocked");
+		    return CreateMockFromInstance<T>(mocked);
 		}
 
-		/// <include file='Mock.xdoc' path='docs/doc[@for="Mock.Behavior"]/*'/>
+	    private static Mock<T> CreateMockFromInstance<T>(T mocked)
+            where T : class
+	    {
+            if (!typeof(T).IsInterface)
+                throw new ArgumentException("This will only work on an interface.");
+
+            var mock = new Mock<T>();
+
+            Type type = typeof(string);
+            ParameterExpression arg = Expression.Parameter(type, "x");
+            Expression expr = arg;
+            
+            //Type delegateType = typeof(Func<,>).MakeGenericType(typeof(T), type);
+            //LambdaExpression lambda = Expression.Lambda(delegateType, expr, arg);
+
+	        var prop = typeof (T).GetProperty("StringProp").GetGetMethod();
+
+            var a =
+	            (Expression<Func<T, string>>)
+	                Expression.Lambda(
+	                    typeof (Func<,>).MakeGenericType(
+	                        typeof (T),
+	                        typeof (string)),
+	                    Expression.Property(
+                            Expression.Parameter(typeof(T), "x"),
+                           prop),
+	                    new List<ParameterExpression>
+	                    {
+	                        Expression.Parameter(typeof (T), "x")
+	                    });
+                    
+            Setup<T, string>(
+                mock,
+                a,
+                null)
+            .Returns(() => (string)prop.Invoke(mocked, null));
+            
+	        return mock;
+	    }
+
+	    /// <include file='Mock.xdoc' path='docs/doc[@for="Mock.Behavior"]/*'/>
 		public virtual MockBehavior Behavior { get; internal set; }
 
 		/// <include file='Mock.xdoc' path='docs/doc[@for="Mock.CallBase"]/*'/>

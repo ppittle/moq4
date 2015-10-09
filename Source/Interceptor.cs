@@ -52,10 +52,12 @@ namespace Moq
 	/// Implements the actual interception and method invocation for 
 	/// all mocks.
 	/// </summary>
-	internal class Interceptor : ICallInterceptor
+	public class Interceptor : ICallInterceptor
 	{
 		private Dictionary<ExpressionKey, IProxyCall> calls = new Dictionary<ExpressionKey, IProxyCall>();
 
+        /// <summary>
+        /// </summary>
 		public Interceptor(MockBehavior behavior, Type targetType, Mock mock)
 		{
 			InterceptionContext = new InterceptorContext(mock, targetType, behavior);

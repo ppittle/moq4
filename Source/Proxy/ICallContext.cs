@@ -43,7 +43,7 @@ using System.Reflection;
 
 namespace Moq.Proxy
 {
-	internal interface ICallContext
+	public interface ICallContext
 	{
 		object[] Arguments { get; }
 

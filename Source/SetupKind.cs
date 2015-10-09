@@ -41,7 +41,10 @@
 
 namespace Moq
 {
-	internal enum SetupKind
+    /// <summary>
+    /// 
+    /// </summary>
+	public enum SetupKind
 	{
 		PropertySet,
 		Other, 
