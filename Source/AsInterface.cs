@@ -60,7 +60,7 @@ namespace Moq
 			get { return this.owner.InnerMocks; }
 		}
 
-		internal override Interceptor Interceptor
+		internal protected override Interceptor Interceptor
 		{
 			get { return this.owner.Interceptor; }
 			set { this.owner.Interceptor = value; }

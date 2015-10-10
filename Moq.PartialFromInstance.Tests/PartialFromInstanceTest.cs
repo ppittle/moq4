@@ -23,7 +23,7 @@ namespace Moq.PartialFromInstance.Tests
 
             var mock2 = Mock.Get<IFoo>(actual);
 
-            mock2.Setup(x => x.IntProp).Returns(42);
+            mock2.Setup(x => x.IntProp).Returns(25);
 
             //ASSERT
             Assert.Equal(
@@ -31,7 +31,7 @@ namespace Moq.PartialFromInstance.Tests
                 mock2.Object.StringProp);
 
             Assert.Equal(
-                42,
+                25,
                 mock2.Object.IntProp);
 
             Assert.Equal(
