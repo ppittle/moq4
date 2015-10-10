@@ -139,69 +139,83 @@ namespace Moq
 
             var mock = new Mock<T>();
 
-            Type type = typeof(string);
-            
-            var prop = typeof(T).GetProperty("StringProp").GetGetMethod();
+            foreach(var interfaceMember in typeof(T).GetMembers())
+            {
+                MockMember(mocked, mock, interfaceMember);
+            }
 
+            return mock;
+        }
+
+        private static void MockMember<T>(T instance, Mock<T> mock, MemberInfo member)
+            where T : class
+        {
+            if (member.MemberType != MemberTypes.Property)
+                return;
+
+            var propInfo = member as PropertyInfo;
             
+            var getMethod = propInfo.GetGetMethod();
+
+            Type returnType = getMethod.ReturnType;
+
             var setupExpression =
                     Expression.Lambda(
                         typeof(Func<,>).MakeGenericType(
                             typeof(T),
-                            type),
+                            returnType),
                         Expression.Property(
                             Expression.Parameter(typeof(T), "x"),
-                           prop),
+                           getMethod),
                         new List<ParameterExpression>
                         {
                             Expression.Parameter(typeof (T), "x")
                         });
 
-          var setupMethod = 
-                typeof(Mock)
-                    .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-                    .First(x => x.Name == "Setup" && x.GetGenericArguments().Length == 2)
-                    .MakeGenericMethod(typeof(T), type);
+            var setupMethod =
+                  typeof(Mock)
+                      .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+                      .First(x => x.Name == "Setup" && x.GetGenericArguments().Length == 2)
+                      .MakeGenericMethod(typeof(T), returnType);
 
-           var response =
-                setupMethod
-                    .Invoke(
-                        null,
-                        BindingFlags.NonPublic | BindingFlags.Static,
-                        null,
-                        new object[] { mock, setupExpression, null },
-                        CultureInfo.CurrentCulture);
+            var response =
+                 setupMethod
+                     .Invoke(
+                         null,
+                         BindingFlags.NonPublic | BindingFlags.Static,
+                         null,
+                         new object[] { mock, setupExpression, null },
+                         CultureInfo.CurrentCulture);
 
             var returnsMethods =
                 typeof(MethodCallReturn<,>)
-                    .MakeGenericType(typeof(T), type)
+                    .MakeGenericType(typeof(T), returnType)
                     .GetMethods()
                     .Where(m => m.Name == "Returns");
 
-            var returnsMethod = returnsMethods.First(m => m.GetParameters().Count() == 1 && m.GetParameters().ElementAt(0).ParameterType == typeof(Func<>).MakeGenericType(type));
+            var returnsMethod = returnsMethods.First(m => m.GetParameters().Count() == 1 && m.GetParameters().ElementAt(0).ParameterType == typeof(Func<>).MakeGenericType(returnType));
 
-            var returnFunction = 
+            var returnFunction =
                 Expression.Lambda(
                     typeof(Func<>)
-                        .MakeGenericType(type),
+                        .MakeGenericType(returnType),
                     Expression.Convert(
                         Expression.Call(
                             Expression.Constant(
-                                mocked),
-                            prop),
-                        type))
+                                instance),
+                            getMethod),
+                        returnType))
                 .Compile();
-                        
+
             returnsMethod
                 .Invoke(
                     response,
                     new object[] {
                         returnFunction
                     });
-        
-            return mock;
         }
-      
+
+
 
         /// <include file='Mock.xdoc' path='docs/doc[@for="Mock.Behavior"]/*'/>
         public virtual MockBehavior Behavior { get; internal set; }
